@@ -5,9 +5,6 @@ class MetabolicNetwork(MyGraph):
         super().__init__(graph)
         self.net_type = networktype
 
-
-
-
     def load_from_files(self, reac_file, meta_file, matrix_file): #################### USADO NA PERGUNTA 1 ####################
         meta_ids = read_file_rm(meta_file)[0]
         reac_ids, reac_attrs = read_file_rm(reac_file)
@@ -40,8 +37,6 @@ class MetabolicNetwork(MyGraph):
                     self.add_edge(m,new_m)
         else:
             print("What are you doing ???")
-
-
 
 
     #auxiliar functions
