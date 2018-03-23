@@ -1,4 +1,5 @@
 from metabolic_network import MetabolicNetwork
+import matplotlib.pyplot as plot
 
 class TP1:
     def perg_1(file_meta, file_reac, file_mat):
@@ -11,22 +12,87 @@ class TP1:
         meta=[]
         graph_list = list(graph.g)
         for i in range(0, len(graph_list)):
-            if(graph_list[i][0] == 'R'):
+            if(graph_list[i].startswith('R_')):
                 reac.append(graph_list[i])
-            elif(graph_list[i][0] == 'M'):
+            elif(graph_list[i].startswith('M_')):
                 meta.append(graph_list[i])
         return len(reac), len(meta)
 
     def perg_3(graph):
-        g = graph.all_degrees()
-        sort = sorted(g.items(), key=lambda x:x[1], reverse=True)
+        meta={}
+        graph_list = dict(graph.all_degrees())
+        for k,v in graph_list.items():
+            if(k.startswith('M_')):
+                meta[k[2:]] = v
+        sort = sorted(meta.items(), key=lambda x:x[1], reverse=True)
         return sort[:10]
 
     def perg_4(graph):
-        print(graph.all_degrees(deg_type="inout"))
-    
-    def perg_5(graph):
+        d = {}
+        graph_list = list(graph.g)
+        for i in range(0, len(graph_list)):
+            if(graph_list[i].startswith('R_')):
+                degree = graph.degree(graph_list[i])
+                if degree in d:
+                    d[degree] = d[degree] + 1
+                else:
+                    d[degree] = 1
+        plot.bar(range(len(d)), d.values(), align='center')
+        plot.xticks(range(len(d)), d.keys())
+        plot.show()
 
+    def perg_5(graph):
+        dead_ends = []
+        graph_list = list(graph.g)
+        for i in range(0, len(graph_list)):
+            if(graph_list[i].startswith('M_')):
+                if(graph.out_degree(graph_list[i])==0):
+                    dead_ends.append(graph_list[i][2:])
+        return dead_ends
+
+    def perg_6(graph,uptake):
+        print()
+
+    def perg_7(graph,meta):
+        reac=[]
+        graph_list = list(graph.g)
+        for i in range(0, len(graph_list)):
+            if(graph_list[i].startswith('R_')):
+                if(meta in graph.get_successors(graph_list[i])):
+                    reac.append(graph_list[i][2:])
+        return reac
+
+    def perg_8(graph):
+        reac=set()
+        graph_list = list(graph.g)
+        for i in range(0, len(graph_list)):
+            if(graph_list[i].startswith('R_')):
+                for meta in graph.get_successors(graph_list[i]):
+                    if(graph_list[i] in graph.get_successors(meta)):
+                        reac.add(graph_list[i][2:])
+        return reac
+
+    def perg_9 (graph, orig, dest):
+        paths=[]
+        orig = 'M_'+orig
+        dest = 'M_'+dest
+        if orig != dest:
+            if(graph.distance(orig,dest)>0):
+                l = [(orig, [])]
+                visited = []
+                while l:
+                    actual_node, path = l.pop(0)
+                    for elem in graph.g[actual_node]:
+                        if elem == dest:
+                            paths.append([orig] + path + [elem])
+                        elif elem not in visited:
+                            l.append((elem, path + [elem]))
+                            visited.append(elem)
+                return paths
+            else: #nao existe caminho ate la
+                return None
+        else: #origem = destino
+            return None
 
     if __name__ == '__main__':
         while True:
@@ -41,20 +107,46 @@ class TP1:
             print('8. Valida que no modelo não existem reações que contenham o mesmo metabolito como reagente e produto.')
             print('9. Implementa uma função que dado o metabolito origem e metabolito destino retorne todos os caminhos possíveis entre estes dois nós.')
             print('10. Implementa uma função que retorne a lista de ciclos existentes na rede.')
-
+            print('0. Sair')
             escolha=input('Escolha a pergunta a executar: ') 
             if escolha=='1': 
                 graph = perg_1('ijr904-metab.txt', 'ijr904-reac.txt', 'ijr904-matrix.txt')
                 graph.print_graph()
             elif escolha=='2':
                 graph = perg_1('ijr904-metab.txt', 'ijr904-reac.txt', 'ijr904-matrix.txt')
-                print("Numero reações: ", perg_2(graph)[0])
-                print("Numero metabolitos: ", perg_2(graph)[1])
+                print('Numero reações: ', perg_2(graph)[0])
+                print('Numero metabolitos: ', perg_2(graph)[1])
             elif escolha=='3':
                 graph = perg_1('ijr904-metab.txt', 'ijr904-reac.txt', 'ijr904-matrix.txt')
                 print(perg_3(graph))
             elif escolha=='4':
                 graph = perg_1('ijr904-metab.txt', 'ijr904-reac.txt', 'ijr904-matrix.txt')
                 perg_4(graph)
+            elif escolha=='5':
+                graph = perg_1('ijr904-metab.txt', 'ijr904-reac.txt', 'ijr904-matrix.txt')
+                print('Detetados ' , len(perg_5(graph)), ' deadends: ', perg_5(graph) )
+            elif escolha=='6':
+                print()
+                #TODO
+            elif escolha=='7':
+                graph = perg_1('ijr904-metab.txt', 'ijr904-reac.txt', 'ijr904-matrix.txt')
+                meta=input('Metabolito a pesquisar: ')
+                print('Reações produtoras do metabolito: ' , perg_7(graph,meta))
+            elif escolha=='8':
+                graph = perg_1('ijr904-metab.txt', 'ijr904-reac.txt', 'ijr904-matrix.txt')
+                print('Existem ', len(perg_8(graph)), ' reações que contem os mesmos metabolitos como reagente e produto:' , perg_8(graph))
+            elif escolha=='9':
+                graph = perg_1('ijr904-metab.txt', 'ijr904-reac.txt', 'ijr904-matrix.txt')
+                meta_orig=input('Metabolito de origem: ')
+                meta_dest=input('Metabolito de destino: ')
+                paths = perg_9(graph,meta_orig,meta_dest)
+                for i in range(len(paths)):
+                    for j in range(len(paths[i])):
+                        print(paths[i][j]+'    ', end='')
+                    print()
+            elif escolha=='10':
+                print()
+                #TODO
             elif escolha=='0':
                 print('\n Adeus!') 
+                exit()

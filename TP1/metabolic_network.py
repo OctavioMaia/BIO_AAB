@@ -6,8 +6,8 @@ class MetabolicNetwork(MyGraph):
         self.net_type = networktype
 
     def load_from_files(self, reac_file, meta_file, matrix_file):
-        meta_ids = read_file_rm(meta_file)[0]
-        reac_ids, reac_attrs = read_file_rm(reac_file)
+        meta_ids = read_file_rm(meta_file,'M')[0]
+        reac_ids, reac_attrs = read_file_rm(reac_file,'R')
         matrix = read_file_matrix(matrix_file)
         aux_graph = get_meta_reac_graph(meta_ids, reac_ids,reac_attrs,  matrix)
 
@@ -54,15 +54,20 @@ def get_meta_reac_graph(meta_ids, reac_ids,reac_attrs, matrix):
         if direction > 0 or lower_bound < 0: graph.add_edge(reac, meta)
     return graph.g
 
-def read_file_rm(file, sep=","):
+def read_file_rm(file, type, sep=","):
     ids =[]
     dict={}
     with open (file) as f:
         for line in f:
             tokens= line.strip().split(sep)
-            id = tokens[0]
-            ids.append(id)
-            dict[id]= tokens[1:]   # list from index 1 until the end
+            if(type=='M'):
+                id = 'M_'+tokens[0]
+                ids.append(id)
+                dict[id]= tokens[1:]   # list from index 1 until the end
+            elif(type=='R'):
+                id = 'R_'+tokens[0]
+                ids.append(id)
+                dict[id]= tokens[1:]   # list from index 1 until the end
     return (ids, dict)
 
 
