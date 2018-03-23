@@ -51,7 +51,16 @@ class TP1:
         return dead_ends
 
     def perg_6(graph,uptake):
-        print()
+        suc= []
+        uptake = input("Insira os valores pretendidos semparados por ';' (ex: M_2dhguln_c;M_maltttr_c) \n>")
+        uptake =  uptake.split(";")
+        metain = list(set(uptake))
+        reacin = list(set([]))
+        for i in range (0, len(metain)):
+            reacin = graph.get_successors([metain[i]])
+            for j in range (0, len (reacin)):
+                if (graph.get_predecessors(reacin[j]) in metain):
+                    metain = graph.get_successors(reacin[j])
 
     def perg_7(graph,meta):
         reac=[]
@@ -73,26 +82,34 @@ class TP1:
         return reac
 
     def perg_9 (graph, orig, dest):
-        paths=[]
-        orig = 'M_'+orig
-        dest = 'M_'+dest
-        if orig != dest:
+        paths = []
+        past_elems = []
+        orig = 'M_' + orig
+        dest = 'M_' + dest
+        if(orig != dest):
             if(graph.distance(orig,dest)>0):
                 l = [(orig, [])]
-                visited = []
-                while l:
-                    actual_node, path = l.pop(0)
-                    for elem in graph.g[actual_node]:
-                        if elem == dest:
-                            paths.append([orig] + path + [elem])
-                        elif elem not in visited:
-                            l.append((elem, path + [elem]))
-                            visited.append(elem)
+                while(l):
+                    cur, path = l.pop(0)
+                    for elem in graph.g[cur]:
+                        if(elem == dest):
+                            paths.append([orig[2:]] + path + [elem[2:]])
+                        elif(elem not in past_elems):
+                            l.append((elem, path + [elem[2:]]))
+                            past_elems.append(elem)
                 return paths
             else: #nao existe caminho ate la
                 return None
         else: #origem = destino
             return None
+
+    def perg_10 (graph):
+        ciclos = set()
+        graph_list = list(graph.g)
+        for i in range(0, len(graph_list)):
+            if(graph.node_has_cycle(graph_list[i])):
+                ciclos.add(graph_list[i][2:])
+        return ciclos
 
     if __name__ == '__main__':
         while True:
@@ -126,27 +143,29 @@ class TP1:
                 graph = perg_1('ijr904-metab.txt', 'ijr904-reac.txt', 'ijr904-matrix.txt')
                 print('Detetados ' , len(perg_5(graph)), ' deadends: ', perg_5(graph) )
             elif escolha=='6':
-                print()
-                #TODO
+                graph = perg_1('ijr904-metab.txt', 'ijr904-reac.txt', 'ijr904-matrix.txt')
+                perg_6(graph,'')
             elif escolha=='7':
                 graph = perg_1('ijr904-metab.txt', 'ijr904-reac.txt', 'ijr904-matrix.txt')
-                meta=input('Metabolito a pesquisar: ')
+                meta = input('Metabolito a pesquisar: ')
                 print('Reações produtoras do metabolito: ' , perg_7(graph,meta))
             elif escolha=='8':
                 graph = perg_1('ijr904-metab.txt', 'ijr904-reac.txt', 'ijr904-matrix.txt')
                 print('Existem ', len(perg_8(graph)), ' reações que contem os mesmos metabolitos como reagente e produto:' , perg_8(graph))
             elif escolha=='9':
                 graph = perg_1('ijr904-metab.txt', 'ijr904-reac.txt', 'ijr904-matrix.txt')
-                meta_orig=input('Metabolito de origem: ')
-                meta_dest=input('Metabolito de destino: ')
+                meta_orig = input('Metabolito de origem: ')
+                meta_dest = input('Metabolito de destino: ')
                 paths = perg_9(graph,meta_orig,meta_dest)
                 for i in range(len(paths)):
+                    print("Caminho", end='')
                     for j in range(len(paths[i])):
-                        print(paths[i][j]+'    ', end='')
+                        print(' -> ' + paths[i][j], end='')
                     print()
             elif escolha=='10':
-                print()
-                #TODO
+                graph = perg_1('ijr904-metab.txt', 'ijr904-reac.txt', 'ijr904-matrix.txt')
+                ciclos = perg_10(graph)
+                print('Existem ' , len(ciclos) , ' ciclos na rede: ', ciclos)
             elif escolha=='0':
                 print('\n Adeus!') 
                 exit()
