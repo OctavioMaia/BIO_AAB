@@ -6,8 +6,7 @@ def readPairs(filename):
 	pairs = []
 	file  = open(filename, "r")
 	flag  =  0
-
-	print ("Parsing...")
+	
 	for line in file:
 		#chrom line
 		if flag == 0:
@@ -72,7 +71,6 @@ def perg_c(fileName):
 
 #SUFFIX_TRIE
 class SuffixTrie:
-	
 	def __init__(self):
 		self.nodes = { 0:(-1,{}) } # root node
 		self.num = 0
@@ -155,26 +153,25 @@ class SuffixTrie:
 		return p,c
 
 	def update(self,new):
-		#atualização dos campos
+		#field update
 		for index in new:
 			for key,value in new[index]:
 				self.nodes[index][1][key]=value
 			self.nodes[index] = (self.nodes[index][0],self.nodes[index][1])	
 	
 	def remove(self,deletions):
-		#remoção dos campos
+		#remove fiels
 		for index in deletions:
 			for key,values in deletions[index]:
 				del(self.nodes[index][1][key])
 				for value in values:
 					del(self.nodes[value])
 
-	#Compact Tree
 	def compact(self):
 		path = ''
 		previous = []
 		new = dict()
-		deletions = dict()
+		dels = dict()
 		if(self.nodes.keys()!=None):
 			for key in self.nodes.keys():
 				if self.nodes[key][0] < 0:
@@ -192,14 +189,14 @@ class SuffixTrie:
 										new[key].append((path,c[len(c)-1]))
 									else:
 										new[key] = [(path,c[len(c)-1])]
-									if key in deletions:
+									if key in dels:
 										list_del = [self.nodes[key][1][node]] + c[0:len(c)-1]
-										deletions[key].append([(node, list_del)])
+										dels[key].append([(node, list_del)])
 									else:
 										list_del = [self.nodes[key][1][node]] + c[0:len(c)-1]
-										deletions[key] = [(node, list_del)]
+										dels[key] = [(node, list_del)]
 			self.update(new)
-			self.remove(deletions)
+			self.remove(dels)
 
 	def repeats(self,k,ocs):
 		x=0
